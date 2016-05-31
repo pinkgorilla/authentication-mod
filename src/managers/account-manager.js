@@ -17,6 +17,7 @@ var UserProfile = require('capital-models').identity.UserProfile;
 module.exports = class AccountManager extends Manager {
     constructor(db, user) {
         super(db);
+        this.user = user;
 
         this.accountCollection = this.db.collection(Map.identity.account);
         this.infoCollection = this.db.collection(Map.identity.userOrganizationInfo);
@@ -74,75 +75,29 @@ module.exports = class AccountManager extends Manager {
         return new Promise((resolve, reject) => {
             var query = { username: username.toLowerCase(), password: Sha1(password || '') };
             //1. query single data by username and sha1 password.
-            this.accountCollection.dbSingleOrDefault(query)
-                .then(account => {
-                    //1a. query single data by username and sha1 password success.
-                    if (account) {
-                        //if account found.
-                        //2. load profile and info.
-                        var loadProfile = this.profileCollection.dbSingle({ accountId: account._id });
-                        var loadInfo = this.infoCollection.dbSingle({ accountId: account._id });
-                        Promise.all([loadProfile, loadInfo])
-                            .then(results => {
-                                //2a. load profile and info success.
-                                var profile = results[0];
-                                var info = results[1];
-                                var data = {
-                                    id: account._id,
-                                    username: account.username,
-                                    name: profile.name,
-                                    nik: info.nik,
-                                    initial: info.initial,
-                                    department: info.department
-                                };
-                                // resolve user.
-                                resolve(data);
-                            })
-                            //2b. something is wrong when load profile and info.
-                            .catch(e => {
-                                reject(e);
-                            });
-                    }
-                    else
-                        //if account not found.
-                        reject("invalid username or password");
+            this.getByQuery(query)
+                .then(result => {
+                    var data = {
+                        id: result._id,
+                        username: result.username,
+                        name: result.name,
+                        nik: result.nik,
+                        initial: result.initial,
+                        department: result.department
+                    };
+                    // resolve user.
+                    resolve(data);
                 })
                 //1b. something is wrong when querying single data by username and sha1 password.
                 .catch(e => {
-                    reject(e);
+                    reject("invalid username or password");
                 });
         });
     }
 
     get(username) {
-        return new Promise((resolve, reject) => {
-            var query = { username: username };
-
-            //1. query single data by username.
-            this.accountCollection.dbSingle(query)
-                .then(account => {
-                    //1a. query single data by username success.                    
-                    var loadProfile = this.infoCollection.dbSingle({ accountId: account._id });
-                    var loadInfo = this.profileCollection.dbSingle({ accountId: account._id });
-                    //2. load profile and info.
-                    Promise.all([loadProfile, loadInfo])
-                        .then(results => {
-                            //2a. load profile and info success.
-                            var data = Object.assign({}, results[1], results[0], account);
-                            data.password = '';
-                            //resolve.
-                            resolve(data);
-                        })
-                        //2b. something is wrong when loading profile and info.
-                        .catch(e => {
-                            reject(e);
-                        });
-                })
-                //1b. something is wrong when querying single data by username.
-                .catch(e => {
-                    reject(e);
-                });
-        });
+        query = { username: username };
+        return this.getByQuery(query);
     }
 
     create(data) {
@@ -158,17 +113,20 @@ module.exports = class AccountManager extends Manager {
             account.password = Sha1(account.password);
             info.initial = (info.initial || '').toUpperCase();
 
-            account.stamp('actor', 'agent');
-            profile.stamp('actor', 'agent');
-            info.stamp('actor', 'agent');
+            account.stamp(this.user.username, 'agent');
+            profile.stamp(this.user.username, 'agent');
+            info.stamp(this.user.username, 'agent');
 
             //1. ensure index.
             this._ensureIndexes()
                 .then(indexResults => {
                     //1a. ensure index success.
+                    delete (account._id);
                     //2. insert account.
                     this.accountCollection.dbInsert(account)
                         .then(accountResult => {
+                            delete (profile._id);
+                            delete (info._id);
                             //2a. insert account success.     
                             profile.accountId = accountResult._id;
                             info.accountId = accountResult._id;
@@ -214,18 +172,22 @@ module.exports = class AccountManager extends Manager {
             delete (account.password);
 
         return new Promise((resolve, reject) => {
+
+            account.stamp(this.user.username, 'agent');
             //1. update account.
             this.accountCollection.dbUpdate(query, account, true)
                 .then(accountResult => {
+                    profile.stamp(this.user.username, 'agent');
+                    info.stamp(this.user.username, 'agent');
                     //1a. update account success.
                     var updateProfile = new Promise(function (resolve, reject) { resolve(null) });
                     var updateInfo = new Promise(function (resolve, reject) { resolve(null) });
-                    if (profile && profile.accountId == accountResult._id) {
+                    if (profile && profile.accountId.toString() == accountResult._id.toString()) {
                         delete (profile._id);
                         profile.accountId = accountResult._id;
                         updateProfile = this.profileCollection.dbUpdate({ accountId: accountResult._id }, profile, true)
                     }
-                    if (info && info.accountId == accountResult._id) {
+                    if (info && info.accountId.toString() == accountResult._id.toString()) {
                         delete (info._id);
                         info.accountId = accountResult._id;
                         info.initial = (info.initial || '').toUpperCase();
@@ -252,11 +214,84 @@ module.exports = class AccountManager extends Manager {
         });
     }
 
+    getByQuery(query) {
+        return new Promise((resolve, reject) => {
+            //1. query single data by query.
+            this.getAccountByQuery(query)
+                .then(account => {
+                    //1a. query single data by query success.                    
+                    var loadProfile = this.getProfileByQuery({ accountId: account._id });
+                    var loadInfo = this.getInfoByQuery({ accountId: account._id });
+                    //2. load profile and info.
+                    Promise.all([loadProfile, loadInfo])
+                        .then(results => {
+                            //2a. load profile and info success.
+                            var data = Object.assign({}, results[1], results[0], account);
+                            data.password = '';
+                            //resolve.
+                            resolve(data);
+                        })
+                        //2b. something is wrong when loading profile and info.
+                        .catch(e => {
+                            reject(e);
+                        });
+                })
+                //1b. something is wrong when querying single data by query.
+                .catch(e => {
+                    reject(e);
+                });
+        });
+    }
+
+    getAccountByQuery(query) {
+        return new Promise((resolve, reject) => {
+            //1. query single data by query.
+            this.accountCollection.dbSingle(query)
+                .then(account => {
+                    //1a. query single data by query success.
+                    resolve(account);
+                })
+                //1b. something is wrong when querying single data by query.
+                .catch(e => {
+                    reject(e);
+                });
+        });
+    }
+
+    getProfileByQuery(query) {
+        return new Promise((resolve, reject) => {
+            //1. query single data by query.
+            this.profileCollection.dbSingle(query)
+                .then(info => {
+                    //1a. query single data by query success.
+                    resolve(info);
+                })
+                //1b. something is wrong when querying single data by query.
+                .catch(e => {
+                    reject(e);
+                });
+        });
+    }
+
+    getInfoByQuery(query) {
+        return new Promise((resolve, reject) => {
+            //1. query single data by query.
+            this.infoCollection.dbSingle(query)
+                .then(info => {
+                    //1a. query single data by query success.
+                    resolve(info);
+                })
+                //1b. something is wrong when querying single data by query.
+                .catch(e => {
+                    reject(e);
+                });
+        });
+    }
 
     _ensureIndexes() {
         return new Promise((resolve, reject) => {
             // account indexes
-            var accountPromise = this.db.collection(map.identity.account).createIndexes([
+            var accountPromise = this.accountCollection.createIndexes([
                 {
                     key: {
                         username: 1
@@ -266,7 +301,7 @@ module.exports = class AccountManager extends Manager {
                 }]);
 
             // info indexes
-            var infoPromise = this.db.collection(map.identity.userOrganizationInfo).createIndexes([
+            var infoPromise = this.infoCollection.createIndexes([
                 {
                     key: {
                         accountId: 1
@@ -276,7 +311,7 @@ module.exports = class AccountManager extends Manager {
                 }]);
 
             // profile indexes
-            var profilePromise = this.db.collection(map.identity.userProfile).createIndexes([
+            var profilePromise = this.profileCollection.createIndexes([
                 {
                     key: {
                         accountId: 1
