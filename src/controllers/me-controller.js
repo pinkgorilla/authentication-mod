@@ -19,24 +19,12 @@ module.exports = class AccountController extends Controller {
         // middlewares. 
         router.all('*', jwt.authenticate({ session: false }));
 
-        // routes.
-        // POST:/
-        router.post('/', (request, response, next) => {
-            var user = request.user;
-            var accountManager = new AccountManager(this.db, user);
-            accountManager.create(request.body)
-                .then(result => {
-                    response.locals.data = result;
-                    next();
-                })
-                .catch(e => next(e));
-        });
-
+        // routes.  
         // GET :/
         router.get('/', (request, response, next) => {
             var user = request.user;
             var accountManager = new AccountManager(this.db, user);
-            accountManager.read()
+            accountManager.get(user.username)
                 .then(result => {
                     response.locals.data = result;
                     next();
@@ -54,24 +42,6 @@ module.exports = class AccountController extends Controller {
                     next();
                 })
                 .catch(e => next(e));
-        });
-
-        // GET :/username
-        router.get('/:username', (request, response, next) => {
-            var username = request.params.username;
-            var user = request.user;
-            var accountManager = new AccountManager(this.db, user);
-            accountManager.get(username)
-                .then(result => {
-                    response.locals.data = result;
-                    next();
-                })
-                .catch(e => next(e));
-        });
-
-        // DELETE:/username
-        router.delete('/:username', (request, response, next) => {
-            next("not implemented");
         });
     }
 };

@@ -33,7 +33,8 @@
             // Command line arguments passed to the program.
             "args": [
                 // "test/account-manager.test.js",
-                "test/account-controller.test.js"
+                // "test/account-controller.test.js"
+                "test/test.js"
             ],
             // Workspace relative or absolute path to the working directory of the program being debugged. Default is the current workspace.
             "cwd": "${workspaceRoot}/.",
@@ -42,8 +43,8 @@
             // Environment variables passed to the program.
             "env": {
                 "NODE_ENV": "development",
-                "jwtSecret": "unit-testing",
-                "connectionString": "mongodb://testing:testing@ds015953.mlab.com:15953/unit-testing"
+                "AUTH_SECRET": "unit-testing",
+                "DB_CONNECTIONSTRING": "mongodb://testing:testing@ds015953.mlab.com:15953/unit-testing"
             }
         },
         {

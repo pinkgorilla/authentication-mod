@@ -17,15 +17,19 @@
   },
   "homepage": "https://github.com/pinkgorilla/authentication-mod#readme",
   "devDependencies": {
-    "capital-models": "^1.0.12",
+    "body-parser": "^1.15.1",
     "express": "^4.13.4",
-    "mean-toolkit": "^1.0.4",
     "mocha": "^2.5.3",
     "mongo-factory": "^1.0.0",
     "mongodb": "^2.1.21",
     "morgan": "^1.7.0",
-    "sha1": "^1.1.1",
+    "passport": "^0.3.2",
     "should": "^9.0.0",
     "supertest": "^1.2.0"
+  },
+  "dependencies": {
+    "capital-models": "^1.0.12",
+    "mean-toolkit": "^1.0.6",
+    "sha1": "^1.1.1"
   }
 }

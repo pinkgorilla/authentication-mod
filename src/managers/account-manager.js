@@ -12,8 +12,6 @@ var Account = require('capital-models').identity.Account;
 var UserOrganizationInfo = require('capital-models').identity.UserOrganizationInfo;
 var UserProfile = require('capital-models').identity.UserProfile;
 
-
-
 module.exports = class AccountManager extends Manager {
     constructor(db, user) {
         super(db);
@@ -96,7 +94,7 @@ module.exports = class AccountManager extends Manager {
     }
 
     get(username) {
-        query = { username: username };
+        var query = { username: username };
         return this.getByQuery(query);
     }
 
