@@ -1,6 +1,6 @@
 {
   "name": "authentication-mod",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "authentication module",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,11 @@
     "supertest": "^1.2.0"
   },
   "dependencies": {
-    "capital-models": "^1.0.12",
+    "authentication-models": "^1.0.0",
     "mean-toolkit": "^1.0.6",
     "sha1": "^1.1.1"
+  },
+  "directories": {
+    "test": "test"
   }
 }

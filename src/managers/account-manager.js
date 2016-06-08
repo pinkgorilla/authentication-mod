@@ -5,21 +5,22 @@ var Sha1 = require('sha1');
 
 // internal deps
 var Manager = require('mean-toolkit').Manager;
-var Map = require('capital-models').map;
+var AuthenticationModels = require('authentication-models');
+var Map = AuthenticationModels.map;
 
 // model types
-var Account = require('capital-models').identity.Account;
-var UserOrganizationInfo = require('capital-models').identity.UserOrganizationInfo;
-var UserProfile = require('capital-models').identity.UserProfile;
+var Account = AuthenticationModels.Account;
+var UserOrganizationInfo = AuthenticationModels.UserOrganizationInfo;
+var UserProfile = AuthenticationModels.UserProfile;
 
 module.exports = class AccountManager extends Manager {
     constructor(db, user) {
         super(db);
         this.user = user;
 
-        this.accountCollection = this.db.collection(Map.identity.account);
-        this.infoCollection = this.db.collection(Map.identity.userOrganizationInfo);
-        this.profileCollection = this.db.collection(Map.identity.userProfile);
+        this.accountCollection = this.db.collection(Map.Account);
+        this.infoCollection = this.db.collection(Map.UserOrganizationInfo);
+        this.profileCollection = this.db.collection(Map.UserProfile);
     }
 
 

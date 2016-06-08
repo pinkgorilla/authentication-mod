@@ -1,7 +1,7 @@
 var should = require('should');
 var request = require('supertest');
 var shared = require('../../shared');
-var Map = require('capital-models').map;
+var Map = require('authentication-models').map;
 
 var db;
 var url = shared.config.server.host + ':' + shared.config.server.port;
@@ -13,7 +13,7 @@ before('authorize', function (done) {
     var factory = require('mongo-factory');
     factory.getConnection(shared.config.connectionString)
         .then(dbInstance => {
-            dbInstance.collection(Map.identity.account).dbFirst()
+            dbInstance.collection(Map.Account).dbFirst()
                 .then(account => {
                     request(url)
                         .post('/authenticate')

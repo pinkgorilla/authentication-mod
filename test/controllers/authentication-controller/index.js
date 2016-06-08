@@ -1,7 +1,7 @@
 var should = require('should');
 var request = require('supertest');
 var shared = require('../../shared');
-var Map = require('capital-models').map;
+var Map = require('authentication-models').map;
 
 var db;
 var url = shared.config.server.host + ':' + shared.config.server.port;
@@ -16,7 +16,7 @@ before('connect to db', function (done) {
 });
 
 it("should success to log in", function (done) {
-    db.collection(Map.identity.account).dbFirst()
+    db.collection(Map.Account).dbFirst()
         .then(account => {
             request(url)
                 .post('/authenticate')
