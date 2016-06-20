@@ -12,7 +12,7 @@ before('connect to db', function (done) {
             db = dbInstance;
             var AccountManager = require('../../../src/managers/account-manager');
             manager = new AccountManager(db, shared.user);
-            manager.accountCollection.dbFirst()
+            manager.accountCollection.first()
                 .then(data => {
                     dataId = data._id;
                     done();
@@ -70,7 +70,11 @@ it('should not update password when password is blank', function () {
                     should.equal(updatedData.password, password, "password should still equal");
                     done();
                 })
-                .catch(e => done(e));
+                .catch(e => {
+                    done(e);
+                });
         })
-        .catch(e => done(e));
+        .catch(e => {
+            done(e);
+        });
 })

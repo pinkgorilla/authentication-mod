@@ -13,7 +13,7 @@ before('authorize', function (done) {
     var factory = require('mongo-factory');
     factory.getConnection(shared.config.connectionString)
         .then(dbInstance => {
-            dbInstance.collection(Map.Account).dbFirst()
+            dbInstance.collection(Map.Account).first()
                 .then(account => {
                     request(url)
                         .post('/authenticate')

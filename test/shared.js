@@ -8,7 +8,7 @@ exports.config = {
     connectionString: process.env.DB_CONNECTIONSTRING,
     server: {
         host: 'localhost',
-        port: 3000,
+        port: 3344,
     },
     jwt: {
         secret: process.env.AUTH_SECRET

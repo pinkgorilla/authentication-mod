@@ -1,6 +1,6 @@
 {
   "name": "authentication-mod",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "authentication module",
   "main": "index.js",
   "scripts": {
@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "authentication-models": "^1.0.0",
-    "mean-toolkit": "^1.0.6",
+    "mean-toolkit": "git+https://git@github.com/pinkgorilla/mean-toolkit.git",
     "sha1": "^1.1.1"
   },
   "directories": {
